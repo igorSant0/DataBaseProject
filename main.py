@@ -22,7 +22,6 @@ def menu(num):
 0. Disconnect: Exit the program
 ===========================
 """
-
     elif num == 2:
         return """
 ===========================
@@ -34,7 +33,6 @@ def menu(num):
 3. Query 3: Description of query 3
 ===========================
 """
-
     else:
         return "Menu error"
 
@@ -52,9 +50,8 @@ def clear():
 
 
 def show():
-
-    utils.format_tables()
-    print(utils.format_tables())
+    result = utils.format_tables()
+    print(result["table"])
 
 
 def update():
@@ -64,75 +61,57 @@ def update():
         for r in results:
             if r[0] not in BLOCKED_TABLES:
                 filtered_results.append(r[0])
+
     table = utils.format_tables(filtered_results)
+    print()
     print(table["table"])
+    print()
 
-    # Obter nomes das colunas
-    colnames_result = executor.execute_sql_by_query(
-        f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table["name"]}' ORDER BY ordinal_position",
+    table_name = table["name"]
+
+    if not table_name:
+        print("No table selected.\n")
+        return
+
+    res = utils.return_pk_column_name(table_name)
+    if not res:
+        print("Table not found or without a pk\n")
+        return
+    pk_column_name = res[0]
+
+    col = input("Type the column to receive an update: ").strip()
+    if col == pk_column_name:
+        print("Impossible to change a pk column!")
+        return
+    query_col = executor.execute_sql_by_query(
+        f"SELECT column_name FROM information_schema.columns WHERE table_name = %s AND column_name = %s",
+        params=(table_name, col),
         fetch_results=True,
     )
-    if not colnames_result:
-        print("Could not retrieve column names.")
+    if not query_col:
+        print(f"Column '{col}' not found at table {table_name}\n")
         return
-    colnames = [col[0] for col in colnames_result]
 
-    pk_column = colnames[0]
-    pk_value = input(
-        f"\nType the {pk_column} of the record you want to update: "
-    ).strip()
-
-    # Verificar se o registro existe
-    check_record = executor.execute_sql_by_query(
-        f"SELECT * FROM {table_name} WHERE {pk_column} = %s",
-        params=(pk_value,),
+    id = input("Type the information id to locate: ").strip()
+    query_id = executor.execute_sql_by_query(
+        f"SELECT * FROM {table_name} WHERE {pk_column_name} = %s",
+        params=(id,),
         fetch_results=True,
     )
-    if not check_record:
-        print(f"❌ No record found with {pk_column} = {pk_value}")
+    if not query_id:
+        print(f"Id '{id}' not found at table {table_name}\n")
         return
 
-    # Mostrar campos disponíveis para UPDATE (exceto a chave primária)
-    updatable_fields = [col for col in colnames if col != pk_column]
-    print(f"\n--- AVAILABLE FIELDS TO UPDATE ---")
-    for idx, field in enumerate(updatable_fields, start=1):
-        print(f"{idx}. {field}")
+    new_info = input(f"Type the new info to update into {col} with id {id}: ").strip()
 
-    # Solicitar campo a atualizar
-    field_to_update = (
-        input("\nType the field name you want to update: ").strip().lower()
+    executor.execute_sql_by_query(
+        f"UPDATE {table_name} SET {col} = %s WHERE {pk_column_name} = %s",
+        params=(new_info, id),
     )
-    if field_to_update not in updatable_fields:
-        print("❌ Field not available for UPDATE.")
-        return
 
-    # Solicitar novo valor
-    new_value = input(f"Type the new value for {field_to_update}: ").strip()
-
-    # Executar UPDATE
-    query = f"UPDATE {table_name} SET {field_to_update} = %s WHERE {pk_column} = %s"
-    executor.execute_sql_by_query(query, params=(new_value, pk_value))
-
-    print("✅ Record updated successfully!")
-
-    # Mostrar o registro atualizado
-    print("\n--- UPDATED RECORD ---")
-    print(utils.format_tables(table_name))
+    print("\nUpdated successfully\n")
+    print(utils.format_tables(filtered_results)["table"])
+    print()
 
 
 update()
-
-
-"""
-
-4. Query  - Test; -> mostra um submenu das consultas (min 3) existentes
-
-5. Update - Test; ->  update na tabela, primeiro mostrando seus atributos e valores, depois permitindo
-que seja selecionado um atributo e um valor dele para modificar
-
-6. Delete - Test; -> realizar deletes de valores especificos
-
-7. IA     - Test;
-
-0. Disconnect.
-"""
