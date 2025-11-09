@@ -43,7 +43,7 @@ def create():
     executor.execute_sql_by_file("create.sql")
 
 
-def insert():
+def populate():
     executor.execute_sql_by_file("populate.sql")
 
 
@@ -134,7 +134,7 @@ def query():
         results = executor.execute_sql_by_file(
             "querys/crimesByTypeAndDelegacy.sql", fetch_results=True
         )
-        columns = ["delegacia", "total_crimes"]  # ✅ Removido "tipo_crime"
+        columns = ["delegacia", "total_crimes"]
         print(utils.format_query_table(results, columns))
         utils.generate_graph(
             results, columns, x_col="delegacia", y_col="total_crimes", graph_type="bar"
@@ -148,6 +148,3 @@ def query():
         utils.generate_graph(
             results, columns, x_col="tipo_crime", y_col="total_provas", graph_type="bar"
         )
-
-
-query()
