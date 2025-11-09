@@ -22,17 +22,19 @@ def menu(num):
 0. Disconnect: Exit the program
 ===========================
 """
+        print()
     elif num == 2:
         return """
 ===========================
        QUERY MENU
 ===========================
 
-1. Query 1: Description of query 1
-2. Query 2: Description of query 2
-3. Query 3: Description of query 3
+1. Crimes by department workload: Displays the total number of crimes associated with each department based on the delegacy they belong to, allowing analysis of operational workload distribution across departments.
+2. Crimes by type and delegacy: Displays the total number of crimes for each type, separated by delegacy.
+3. Evidences by type and crime: Presents the quantity of evidences collected, grouped by type of evidence and associated crime.
 ===========================
 """
+        print()
     else:
         return "Menu error"
 
@@ -50,7 +52,7 @@ def clear():
 
 
 def show():
-    result = utils.format_tables()
+    result = utils.format_db_tables()
     print(result["table"])
 
 
@@ -62,7 +64,7 @@ def update():
             if r[0] not in BLOCKED_TABLES:
                 filtered_results.append(r[0])
 
-    table = utils.format_tables(filtered_results)
+    table = utils.format_db_tables(filtered_results)
     print()
     print(table["table"])
     print()
@@ -110,8 +112,42 @@ def update():
     )
 
     print("\nUpdated successfully\n")
-    print(utils.format_tables(filtered_results)["table"])
+    print(utils.format_db_tables(filtered_results)["table"])
     print()
 
 
-update()
+def query():
+
+    print(menu(2))
+    opt = input("Type a query option: ")
+
+    if opt == "1":
+        results = executor.execute_sql_by_file(
+            "querys/crimesByDepartment.sql", fetch_results=True
+        )
+        columns = ["department", "tipo_crime", "total_crimes"]
+        print(utils.format_query_table(results, columns))
+        utils.generate_graph(
+            results, columns, x_col="department", y_col="total_crimes", graph_type="bar"
+        )
+    elif opt == "2":
+        results = executor.execute_sql_by_file(
+            "querys/crimesByTypeAndDelegacy.sql", fetch_results=True
+        )
+        columns = ["delegacia", "total_crimes"]  # ✅ Removido "tipo_crime"
+        print(utils.format_query_table(results, columns))
+        utils.generate_graph(
+            results, columns, x_col="delegacia", y_col="total_crimes", graph_type="bar"
+        )
+    elif opt == "3":
+        results = executor.execute_sql_by_file(
+            "querys/evidenceByTypeAndCrime.sql", fetch_results=True
+        )
+        columns = ["tipo_crime", "tipo_prova", "total_provas"]
+        print(utils.format_query_table(results, columns))
+        utils.generate_graph(
+            results, columns, x_col="tipo_crime", y_col="total_provas", graph_type="bar"
+        )
+
+
+query()

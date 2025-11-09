@@ -1,8 +1,10 @@
 from . import executor
 from typing import Dict, List, Optional
+import pandas as pd
+import matplotlib.pyplot as plt
 
 
-def format_tables(tables: Optional[List[str]] = None) -> Dict[str, str]:
+def format_db_tables(tables: Optional[List[str]] = None) -> Dict[str, str]:
     results = []
     if tables is None:
         results = executor.execute_sql_by_file("tables.sql", fetch_results=True)
@@ -71,3 +73,37 @@ def return_pk_column_name(table_name: Optional[str]) -> Optional[List[str]]:
         return primary_keys
     except:
         return None
+
+
+def generate_graph(data, columns, x_col, y_col, graph_type="bar"):
+    if not isinstance(data, pd.DataFrame):
+        df = pd.DataFrame(data, columns=columns)
+    else:
+        df = data
+
+    if graph_type == "bar":
+        df.plot(x=x_col, y=y_col, kind="bar")
+    elif graph_type == "pie":
+        df.set_index(x_col)[y_col].plot.pie(autopct="%1.1f%%")
+    elif graph_type == "line":
+        df.plot(x=x_col, y=y_col, kind="line")
+    else:
+        print("Unsupported graph type.")
+        return
+
+    plt.title(f"{y_col} by {x_col}")
+    plt.xlabel(x_col)
+    plt.ylabel(y_col)
+    plt.tight_layout()
+    plt.show()
+
+
+def format_query_table(data, columns):
+    if not data or not columns:
+        return "No data to display."
+
+    header = " | ".join(str(col).ljust(20) for col in columns)
+    separator = "-" * len(header)
+    formatted_rows = [" | ".join(str(value).ljust(20) for value in row) for row in data]
+    table = f"{header}\n{separator}\n" + "\n".join(formatted_rows)
+    return table

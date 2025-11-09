@@ -10,6 +10,7 @@ def execute_sql_by_file(file_name, params=None, fetch_results=False):
     conn = None
     cursor = None
     file_path = os.path.join(SQL_DIR, file_name)
+    print("-----", file_path)
 
     try:
         conn = connector.connect()
