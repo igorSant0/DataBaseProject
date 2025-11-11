@@ -169,7 +169,7 @@ class NaturalLanguageInterpreter:
         self,
         query_result: List[Tuple[Any, ...]],
         columns: List[str],
-        original_query: Optional[str] = None,
+        original_query: str,
     ) -> str:
 
         result_json = utils.tuples_to_json(query_result, columns)
@@ -185,7 +185,7 @@ class NaturalLanguageInterpreter:
         self,
         query_result: List[Tuple[Any, ...]],
         columns: List[str],
-        original_query=str,
+        original_query: str,
         temperature: float = 1.0,  # creativity
         max_completion_tokens: int = 2000,  # words limit
     ) -> Dict[str, Any]:
