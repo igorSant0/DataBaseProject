@@ -2,12 +2,16 @@ from . import executor
 from typing import Dict, List, Optional
 import pandas as pd
 import matplotlib.pyplot as plt
+import json
 
 
 def format_db_tables(tables: Optional[List[str]] = None) -> Dict[str, str]:
     results = []
     if tables is None:
-        results = executor.execute_sql_by_file("tables.sql", fetch_results=True)
+        result_tuple = executor.execute_sql_by_file("tables.sql", fetch_results=True)
+        if not result_tuple:
+            return {"table": "No tables found", "name": ""}
+        results, _ = result_tuple
         if not results:
             return {"table": "No tables found", "name": ""}
 
@@ -27,20 +31,27 @@ def format_db_tables(tables: Optional[List[str]] = None) -> Dict[str, str]:
 
     print(f"\n--- TABLE DATA: {table_name.upper()} ---")
 
-    table_results = executor.execute_sql_by_query(
+    table_result_tuple = executor.execute_sql_by_query(
         f"SELECT * FROM {table_name}", fetch_results=True
     )
+
+    if not table_result_tuple:
+        return {"table": "No data found in the table.", "name": table_name}
+
+    table_results, _ = table_result_tuple
 
     if not table_results:
         return {"table": "No data found in the table.", "name": table_name}
 
-    colnames_result = executor.execute_sql_by_query(
+    colnames_result_tuple = executor.execute_sql_by_query(
         f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table_name}' ORDER BY ordinal_position",
         fetch_results=True,
     )
 
-    if not colnames_result:
+    if not colnames_result_tuple:
         return {"table": "Could not retrieve column names.", "name": table_name}
+
+    colnames_result, _ = colnames_result_tuple
 
     colnames = [col[0] for col in colnames_result]
 
@@ -66,9 +77,12 @@ def return_pk_column_name(table_name: Optional[str]) -> Optional[List[str]]:
       AND tc.table_name = %s;
     """
     try:
-        pk_result = executor.execute_sql_by_query(
+        pk_result_tuple = executor.execute_sql_by_query(
             query_pk, params=(table_name,), fetch_results=True
         )
+        if not pk_result_tuple:
+            return None
+        pk_result, _ = pk_result_tuple
         primary_keys = [row[0] for row in pk_result] if pk_result else []
         return primary_keys
     except:
@@ -107,3 +121,8 @@ def format_query_table(data, columns):
     formatted_rows = [" | ".join(str(value).ljust(20) for value in row) for row in data]
     table = f"{header}\n{separator}\n" + "\n".join(formatted_rows)
     return table
+
+
+def tuples_to_json(results, columns):
+    dict_list = [dict(zip(columns, row)) for row in results]
+    return json.dumps(dict_list, ensure_ascii=False, indent=2)

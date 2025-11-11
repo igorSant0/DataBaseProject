@@ -1,6 +1,7 @@
 from service import executor
 from service import utils
 from ai import ai_maneger
+import json
 
 BLOCKED_TABLES = ["envolvido_crime", "agente_crime", "tipo_prova", "Tipo_Crime"]
 
@@ -58,7 +59,11 @@ def show():
 
 
 def update():
-    results = executor.execute_sql_by_file("tables.sql", fetch_results=True)
+    result_tuple = executor.execute_sql_by_file("tables.sql", fetch_results=True)
+    if not result_tuple:
+        print("Error fetching tables.")
+        return
+    results, _ = result_tuple
     filtered_results = []
     if results:
         for r in results:
@@ -91,6 +96,8 @@ def update():
         params=(table_name, col),
         fetch_results=True,
     )
+    if query_col:
+        query_col, _ = query_col
     if not query_col:
         print(f"Column '{col}' not found at table {table_name}\n")
         return
@@ -101,6 +108,8 @@ def update():
         params=(id,),
         fetch_results=True,
     )
+    if query_id:
+        query_id, _ = query_id
     if not query_id:
         print(f"Id '{id}' not found at table {table_name}\n")
         return
@@ -123,32 +132,47 @@ def query():
     opt = input("Type a query option: ")
 
     if opt == "1":
-        results = executor.execute_sql_by_file(
+        result_tuple = executor.execute_sql_by_file(
             "querys/crimesByDepartment.sql", fetch_results=True
         )
-        columns = ["department", "tipo_crime", "total_crimes"]
-        print(utils.format_query_table(results, columns))
-        utils.generate_graph(
-            results, columns, x_col="department", y_col="total_crimes", graph_type="bar"
-        )
+        if result_tuple:
+            results, columns = result_tuple
+            print(utils.format_query_table(results, columns))
+            utils.generate_graph(
+                results,
+                columns,
+                x_col="department",
+                y_col="total_crimes",
+                graph_type="bar",
+            )
     elif opt == "2":
-        results = executor.execute_sql_by_file(
+        result_tuple = executor.execute_sql_by_file(
             "querys/crimesByTypeAndDelegacy.sql", fetch_results=True
         )
-        columns = ["delegacia", "total_crimes"]
-        print(utils.format_query_table(results, columns))
-        utils.generate_graph(
-            results, columns, x_col="delegacia", y_col="total_crimes", graph_type="bar"
-        )
+        if result_tuple:
+            results, columns = result_tuple
+            print(utils.format_query_table(results, columns))
+            utils.generate_graph(
+                results,
+                columns,
+                x_col="delegacia",
+                y_col="total_crimes",
+                graph_type="bar",
+            )
     elif opt == "3":
-        results = executor.execute_sql_by_file(
+        result_tuple = executor.execute_sql_by_file(
             "querys/evidenceByTypeAndCrime.sql", fetch_results=True
         )
-        columns = ["tipo_crime", "tipo_prova", "total_provas"]
-        print(utils.format_query_table(results, columns))
-        utils.generate_graph(
-            results, columns, x_col="tipo_crime", y_col="total_provas", graph_type="bar"
-        )
+        if result_tuple:
+            results, columns = result_tuple
+            print(utils.format_query_table(results, columns))
+            utils.generate_graph(
+                results,
+                columns,
+                x_col="tipo_crime",
+                y_col="total_provas",
+                graph_type="bar",
+            )
 
 
 def ai():
@@ -166,27 +190,40 @@ def ai():
     """
     with open("sql/create.sql", "r", encoding="utf-8") as file:
         schema = file.read()
-    
-    text = "Retorne todos os envolvidos que possuam idade máxima de 36 anos"
-    
-    try:
-        sql_query = ai_maneger.sql_from_LLM(nl=text, schema=schema)
-        
-        print(f"\nSQL gerado:\n{sql_query}\n")
 
-        
+    text = "Retorne todos os envolvidos que possuam idade máxima de 36 anos"
+
+    try:
+        # sql_query = ai_maneger.sql_from_LLM(nl=text, schema=schema)
+
+        # print(f"\nSQL gerado:\n{sql_query}\n")
+
         # # Executar a query gerada
         # results = executor.execute_sql_by_query(sql_query, fetch_results=True)
-        
+
         # if results:
         #     print("Resultados:")
         #     for row in results:
         #         print(row)
         # else:
         #     print("Nenhum resultado encontrado.")
-            
+
+        query = "SELECT * FROM envolvido WHERE idade <= 36;"
+
+        result_tuple = executor.execute_sql_by_file("test.sql", fetch_results=True)
+        if result_tuple:
+            result, columns = result_tuple
+            interpretation = ai_maneger.interpretation_from_LLM(
+                query_result=result,
+                columns=columns,
+                schema=schema,
+                original_query=query,
+            )
+
+            print(interpretation)
+
     except Exception as e:
         print(f"Error: {e}")
-    
+
 
 ai()

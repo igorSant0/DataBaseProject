@@ -1,16 +1,18 @@
 from . import connector
 import os
 import psycopg2
+from typing import Optional, Tuple, List, Any
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SQL_DIR = os.path.join(BASE_DIR, "sql")
 
 
-def execute_sql_by_file(file_name, params=None, fetch_results=False):
+def execute_sql_by_file(
+    file_name: str, params=None, fetch_results: bool = False
+) -> Optional[Tuple[List[Tuple[Any, ...]], List[str]]]:
     conn = None
     cursor = None
     file_path = os.path.join(SQL_DIR, file_name)
-    print("-----", file_path)
 
     try:
         conn = connector.connect()
@@ -27,15 +29,16 @@ def execute_sql_by_file(file_name, params=None, fetch_results=False):
             if sql_command:
                 cursor.execute(sql_command, params)
 
-        results = None
-
         if fetch_results:
             results = cursor.fetchall()
+            columns = (
+                [desc[0] for desc in cursor.description] if cursor.description else []
+            )
+            return results, columns
         else:
             conn.commit()
             print(f"Success: Commands from file '{file_name}' were executed.")
-
-        return results
+            return None
 
     except (Exception, psycopg2.Error) as error:
         print(f"Error executing '{file_name}': {error}")
@@ -47,7 +50,9 @@ def execute_sql_by_file(file_name, params=None, fetch_results=False):
         connector.disconnect(conn, cursor)
 
 
-def execute_sql_by_query(query, params=None, fetch_results=False):
+def execute_sql_by_query(
+    query: str, params=None, fetch_results: bool = False
+) -> Optional[Tuple[List[Tuple[Any, ...]], List[str]]]:
     conn = None
     cursor = None
 
@@ -59,14 +64,15 @@ def execute_sql_by_query(query, params=None, fetch_results=False):
         cursor = conn.cursor()
         cursor.execute(query, params)
 
-        results = None
-
         if fetch_results:
             results = cursor.fetchall()
+            columns = (
+                [desc[0] for desc in cursor.description] if cursor.description else []
+            )
+            return results, columns
         else:
             conn.commit()
-
-        return results
+            return None
 
     except (Exception, psycopg2.Error) as error:
         print(f"Error executing query: {error}")

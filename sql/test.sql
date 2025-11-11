@@ -1,0 +1,1 @@
+SELECT * FROM envolvido WHERE idade <= 36;

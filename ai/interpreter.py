@@ -1,13 +1,12 @@
 import os
-from typing import Dict, Optional, Any, List
+from typing import Dict, Optional, Any, List, Tuple
 from openai import OpenAI
+from service import utils
 
 
 class NaturalLanguageInterpreter:
 
-    def __init__(
-        self, api_key: Optional[str] = None, model: str = "gpt-4o-mini"
-    ):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o-mini"):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self.api_key:
             raise ValueError("API Key not found. Configure OPENAI_API_KEY in .env")
@@ -19,33 +18,56 @@ class NaturalLanguageInterpreter:
     def set_database_schema(self, schema: str):
         self.database_schema = schema
 
-    def _build_system_prompt(self) -> str:
-        return f"""You are an SQL and database expert.
-                    Your task is to convert natural language questions into valid SQL queries.
+    def _build_system_prompt(self, prompt_type: int = 1) -> str:
+        if prompt_type == 1:
+            return f"""You are an SQL and database expert.
+                Your task is to convert natural language questions into valid SQL queries.
 
-                    **IMPORTANT:**
-                    - Generate ONLY SELECT queries (read-only)
-                    - Return ONLY the SQL query, without additional explanations
-                    - Be precise and efficient
+                **IMPORTANT:**
+                - Generate ONLY SELECT queries (read-only)
+                - Return ONLY the SQL query, without additional explanations
+                - Use LIMIT when appropriate to limit results
+                - Be precise and efficient
 
-                    **Database Schema:**
-                    {self.database_schema if self.database_schema else "Schema not provided"}
+                **Database Schema:**
+                {self.database_schema if self.database_schema else "Schema not provided"}
 
-                    **Response Format:**
-                    Return only the pure SQL query, without markdown, without explanations.
-                    Example: SELECT * FROM users WHERE age > 18 LIMIT 10
-                    """
+                **Response Format:**
+                Return only the pure SQL query, without markdown, without explanations.
+                Example: SELECT * FROM users WHERE age > 18 LIMIT 10
+                """
+        elif prompt_type == 2:
+            return """You are a data analyst assistant.
+                Your task is to interpret SQL query results and explain them in natural language (Portuguese - pt-BR).
+
+                **IMPORTANT:**
+                - Summarize the main findings from the data
+                - Explain what the data shows in simple, clear terms
+                - Be concise and objective
+                - Do NOT generate SQL queries
+                - Respond ONLY in Portuguese (pt-BR)
+                - Provide insights and patterns if visible in the data
+
+                Analyze the following query result and provide a natural language interpretation:
+                """
+        else:
+            raise ValueError(
+                f"Invalid prompt_type: {prompt_type}. Use 1 for SQL generation or 2 for interpretation."
+            )
 
     def interpret_nl(
         self,
         nl: str,
         temperature: float = 1.0,  # creativity
-        max_completion_tokens: int = 2000,  # words limit (increased for reasoning models)
+        max_completion_tokens: int = 2000,  # words limit
     ) -> Dict[str, Any]:
 
         try:
             messages: List[Dict[str, Any]] = [
-                {"role": "system", "content": self._build_system_prompt()},
+                {
+                    "role": "system",
+                    "content": self._build_system_prompt(prompt_type=1),
+                },
                 {"role": "user", "content": nl},
             ]
 
@@ -57,7 +79,11 @@ class NaturalLanguageInterpreter:
                 n=1,
             )
 
-            sql_query = response.choices[0].message.content.strip()
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("No message returned")
+
+            sql_query = content.strip()
             sql_query = self._clean_sql_response(sql_query)
 
             tokens_used = response.usage.total_tokens if response.usage else 0
@@ -105,7 +131,7 @@ class NaturalLanguageInterpreter:
         return sql
 
     # TODO: erro na validação das querys
-    def interpret_with_validation( 
+    def interpret_with_validation(
         self, nl: str, allowed_tables: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         result = self.interpret_nl(nl)
@@ -138,3 +164,86 @@ class NaturalLanguageInterpreter:
             result["error"] = "Generated query did not pass security validations"
 
         return result
+
+    def _generate_context(
+        self,
+        query_result: List[Tuple[Any, ...]],
+        columns: List[str],
+        original_query: Optional[str] = None,
+    ) -> str:
+
+        result_json = utils.tuples_to_json(query_result, columns)
+
+        context = ""
+        if original_query:
+            context += f"SQL utilizada:\n{original_query}\n\n"
+        context += f"Resultado da consulta (em JSON):\n{result_json}"
+
+        return context
+
+    def interpret_query_result_as_text(
+        self,
+        query_result: List[Tuple[Any, ...]],
+        columns: List[str],
+        original_query=str,
+        temperature: float = 1.0,  # creativity
+        max_completion_tokens: int = 2000,  # words limit
+    ) -> Dict[str, Any]:
+
+        try:
+
+            context = self._generate_context(query_result, columns, original_query)
+
+            messages: List[Dict[str, Any]] = [
+                {
+                    "role": "system",
+                    "content": self._build_system_prompt(prompt_type=2),
+                },
+                {"role": "user", "content": context},
+            ]
+
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,  # type: ignore
+                temperature=temperature,
+                max_completion_tokens=max_completion_tokens,
+                n=1,
+            )
+
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("No message returned")
+
+            interpretation = content.strip()
+
+            tokens_used = response.usage.total_tokens if response.usage else 0
+
+            return {
+                "success": True,
+                "interpretation": interpretation,
+                "error": None,
+                "model_used": self.model,
+                "tokens_used": tokens_used,
+            }
+
+        except Exception as e:
+            error_message = str(e)
+
+            if "authentication" in error_message.lower():
+                return {
+                    "success": False,
+                    "interpretation": None,
+                    "error": "Authentication error. Check your API Key.",
+                }
+            elif "rate_limit" in error_message.lower():
+                return {
+                    "success": False,
+                    "interpretation": None,
+                    "error": "Request limit exceeded. Try again later.",
+                }
+            else:
+                return {
+                    "success": False,
+                    "interpretation": None,
+                    "error": f"Error: {error_message}",
+                }
