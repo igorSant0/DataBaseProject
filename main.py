@@ -148,3 +148,18 @@ def query():
         utils.generate_graph(
             results, columns, x_col="tipo_crime", y_col="total_provas", graph_type="bar"
         )
+
+
+def ai():
+    """
+    --> input do usuario no main no formato NL (main)
+
+    --> NL repassada para a api junto com o schema para interpretação da LLM(interpretor)
+
+    --> LLM devolve um comando SQL com base na interpretação e esse comando é executado por um db_maneger
+        (db_manager)
+    --> db_manager devolve o resultado da consulta e isso é enviado novamente para a LLM para interpretar
+    o resultado(interpretor)
+
+    --> essa interpretação final é enviada para o main novamente como uma NL(main)
+    """
