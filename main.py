@@ -167,12 +167,13 @@ def ai():
     with open("sql/create.sql", "r", encoding="utf-8") as file:
         schema = file.read()
     
-    text = "Retorne todos os veículos que possuem o status como 'Disponível'"
+    text = "Retorne todos os envolvidos que possuam idade máxima de 36 anos"
     
     try:
         sql_query = ai_maneger.sql_from_LLM(nl=text, schema=schema)
         
         print(f"\nSQL gerado:\n{sql_query}\n")
+
         
         # # Executar a query gerada
         # results = executor.execute_sql_by_query(sql_query, fetch_results=True)

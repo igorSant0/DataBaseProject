@@ -6,8 +6,8 @@ from openai import OpenAI
 class NaturalLanguageInterpreter:
 
     def __init__(
-        self, api_key: Optional[str] = None, model: str = "gpt-5-nano"
-    ):  # mudar o modelo para mini
+        self, api_key: Optional[str] = None, model: str = "gpt-4o-mini"
+    ):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self.api_key:
             raise ValueError("API Key not found. Configure OPENAI_API_KEY in .env")
@@ -40,7 +40,7 @@ class NaturalLanguageInterpreter:
         self,
         nl: str,
         temperature: float = 1.0,  # creativity
-        max_completion_tokens: int = 500,  # words limit
+        max_completion_tokens: int = 2000,  # words limit (increased for reasoning models)
     ) -> Dict[str, Any]:
 
         try:
