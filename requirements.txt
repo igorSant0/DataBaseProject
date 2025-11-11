@@ -1,0 +1,15 @@
+# Database dependencies
+psycopg==3.2.12
+
+# AI/OpenAI dependencies
+openai==2.7.2
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Data analysis and visualization
+pandas==2.3.3
+matplotlib==3.10.7
+
+# Type hints (already included in Python 3.8+, but for compatibility)
+typing_extensions>=4.11

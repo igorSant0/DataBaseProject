@@ -6,7 +6,7 @@ from openai import OpenAI
 class NaturalLanguageInterpreter:
 
     def __init__(
-        self, api_key: Optional[str] = None, model: str = "gpt-4"
+        self, api_key: Optional[str] = None, model: str = "gpt-5-nano"
     ):  # mudar o modelo para mini
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self.api_key:
@@ -38,34 +38,24 @@ class NaturalLanguageInterpreter:
 
     def interpret_nl(
         self,
-        natural_language_query: str,
-        temperature: float = 0.3,  # creativity
-        max_tokens: int = 500,  # words limit
+        nl: str,
+        temperature: float = 1.0,  # creativity
+        max_completion_tokens: int = 500,  # words limit
     ) -> Dict[str, Any]:
 
         try:
             messages: List[Dict[str, Any]] = [
                 {"role": "system", "content": self._build_system_prompt()},
-                {"role": "user", "content": natural_language_query},
+                {"role": "user", "content": nl},
             ]
 
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,  # type: ignore
                 temperature=temperature,
-                max_tokens=max_tokens,
+                max_completion_tokens=max_completion_tokens,
                 n=1,
             )
-
-            if (
-                not hasattr(response, "choices")
-                or not response.choices
-                or not hasattr(response.choices[0], "message")
-                or not response.choices[0].message
-                or not hasattr(response.choices[0].message, "content")
-                or not response.choices[0].message.content
-            ):
-                raise ValueError("No message returned")
 
             sql_query = response.choices[0].message.content.strip()
             sql_query = self._clean_sql_response(sql_query)
@@ -114,10 +104,11 @@ class NaturalLanguageInterpreter:
 
         return sql
 
-    def interpret_with_validation(
-        self, natural_language_query: str, allowed_tables: Optional[List[str]] = None
+    # TODO: erro na validação das querys
+    def interpret_with_validation( 
+        self, nl: str, allowed_tables: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        result = self.interpret_nl(natural_language_query)
+        result = self.interpret_nl(nl)
 
         if not result["success"]:
             return result

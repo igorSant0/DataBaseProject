@@ -1,5 +1,6 @@
 from service import executor
 from service import utils
+from ai import ai_maneger
 
 BLOCKED_TABLES = ["envolvido_crime", "agente_crime", "tipo_prova", "Tipo_Crime"]
 
@@ -163,3 +164,28 @@ def ai():
 
     --> essa interpretação final é enviada para o main novamente como uma NL(main)
     """
+    with open("sql/create.sql", "r", encoding="utf-8") as file:
+        schema = file.read()
+    
+    text = "Retorne todos os veículos que possuem o status como 'Disponível'"
+    
+    try:
+        sql_query = ai_maneger.sql_from_LLM(nl=text, schema=schema)
+        
+        print(f"\nSQL gerado:\n{sql_query}\n")
+        
+        # # Executar a query gerada
+        # results = executor.execute_sql_by_query(sql_query, fetch_results=True)
+        
+        # if results:
+        #     print("Resultados:")
+        #     for row in results:
+        #         print(row)
+        # else:
+        #     print("Nenhum resultado encontrado.")
+            
+    except Exception as e:
+        print(f"Error: {e}")
+    
+
+ai()
