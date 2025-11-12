@@ -1,6 +1,6 @@
 from service import executor
 from service import utils
-from ai import ai_maneger
+from ai import ai_manager
 import json
 
 BLOCKED_TABLES = ["envolvido_crime", "agente_crime", "tipo_prova", "Tipo_Crime"]
@@ -174,56 +174,29 @@ def query():
                 graph_type="bar",
             )
 
-
+# TODO: Mostrar a tabela da consulta formatada.
 def ai():
-    """
-    --> input do usuario no main no formato NL (main)
-
-    --> NL repassada para a api junto com o schema para interpretação da LLM(interpretor)
-
-    --> LLM devolve um comando SQL com base na interpretação e esse comando é executado por um db_maneger
-        (db_manager)
-    --> db_manager devolve o resultado da consulta e isso é enviado novamente para a LLM para interpretar
-    o resultado(interpretor)
-
-    --> essa interpretação final é enviada para o main novamente como uma NL(main)
-    """
     with open("sql/create.sql", "r", encoding="utf-8") as file:
         schema = file.read()
 
-    text = "Retorne todos os envolvidos que possuam idade máxima de 36 anos"
+    order = input("Type something to consult in our database: ").strip()
 
     try:
-        # sql_query = ai_maneger.sql_from_LLM(nl=text, schema=schema)
+        sql_query = ai_manager.sql_from_LLM(nl=order, schema=schema)
 
-        # print(f"\nSQL gerado:\n{sql_query}\n")
-
-        # # Executar a query gerada
-        # results = executor.execute_sql_by_query(sql_query, fetch_results=True)
-
-        # if results:
-        #     print("Resultados:")
-        #     for row in results:
-        #         print(row)
-        # else:
-        #     print("Nenhum resultado encontrado.")
-
-        query = "SELECT * FROM envolvido WHERE idade <= 36;"
-
-        result_tuple = executor.execute_sql_by_file("test.sql", fetch_results=True)
+        result_tuple = executor.execute_sql_by_query(sql_query, fetch_results=True)
         if result_tuple:
             result, columns = result_tuple
-            interpretation = ai_maneger.interpretation_from_LLM(
+            interpretation = ai_manager.interpretation_from_LLM(
                 query_result=result,
                 columns=columns,
                 schema=schema,
-                original_query=query,
+                original_query=sql_query,
             )
 
             print(interpretation)
 
     except Exception as e:
         print(f"Error: {e}")
-
 
 ai()

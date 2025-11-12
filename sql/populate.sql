@@ -70,8 +70,8 @@ VALUES  (1, 'Roubo', 'Roubo de veículo'),
         (8, 'Vandalismo', 'Danos ao patrimônio público');
 
 INSERT INTO crime (data_crime, id_crime, descricao_crime, local_crime, status_crime, fk_delegacia_id_delegacia, fk_id_tipo_crime)
-VALUES  ('2025-11-01', 1, 'Assalto ao banco', 'Rua C, 789', 'Resolvido', 1, 1),
-        ('2025-11-02', 2, 'Assalto à loja', 'Rua D, 321', 'Em investigação', 2, 1),
+VALUES  ('2025-11-01', 1, 'Assalto ao banco', 'Rua C, 789', 'Resolvido', 1, 2),
+        ('2025-11-02', 2, 'Assalto à loja', 'Rua D, 321', 'Em investigação', 2, 2),
         ('2025-11-03', 3, 'Homicídio culposo', 'Rua E, 456', 'Em aberto', 3, 4),
         ('2025-11-04', 4, 'Homicídio em residência', 'Rua F, 123', 'Resolvido', 1, 4),
         ('2025-11-05', 5, 'Tráfico de drogas', 'Rua G, 456', 'Em investigação', 2, 5),

@@ -18,6 +18,7 @@ class NaturalLanguageInterpreter:
     def set_database_schema(self, schema: str):
         self.database_schema = schema
 
+    # TODO: melhorar o prompt para ele retornar menos texto e mais visualização numérica
     def _build_system_prompt(self, prompt_type: int = 1) -> str:
         if prompt_type == 1:
             return f"""You are an SQL and database expert.
@@ -130,7 +131,6 @@ class NaturalLanguageInterpreter:
 
         return sql
 
-    # TODO: erro na validação das querys
     def interpret_with_validation(
         self, nl: str, allowed_tables: Optional[List[str]] = None
     ) -> Dict[str, Any]:

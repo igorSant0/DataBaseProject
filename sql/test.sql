@@ -1,1 +1,1 @@
-SELECT * FROM envolvido WHERE idade <= 36;
+SELECT data_crime FROM crime WHERE fk_id_tipo_crime = (SELECT id_tipo_crime FROM Tipo_Crime WHERE categoria = 'Assalto') LIMIT 100;
