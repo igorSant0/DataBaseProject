@@ -122,10 +122,9 @@ def update():
     )
 
     print("\nUpdated successfully\n")
-    print(utils.format_db_tables(filtered_results)["table"])
     print()
 
-
+# TODO: querys ainda não implementadas
 def query():
 
     print(menu(2))
@@ -174,7 +173,6 @@ def query():
                 graph_type="bar",
             )
 
-# TODO: Mostrar a tabela da consulta formatada.
 def ai():
     with open("sql/create.sql", "r", encoding="utf-8") as file:
         schema = file.read()
@@ -185,6 +183,13 @@ def ai():
         sql_query = ai_manager.sql_from_LLM(nl=order, schema=schema)
 
         result_tuple = executor.execute_sql_by_query(sql_query, fetch_results=True)
+
+        if result_tuple:
+            results, columns = result_tuple
+            print()
+            print(utils.format_query_table(results, columns))
+            print()
+
         if result_tuple:
             result, columns = result_tuple
             interpretation = ai_manager.interpretation_from_LLM(
@@ -199,4 +204,88 @@ def ai():
     except Exception as e:
         print(f"Error: {e}")
 
-ai()
+
+def delete():
+    result_tuple = executor.execute_sql_by_file("tables.sql", fetch_results=True)
+    if not result_tuple:
+        print("Error fetching tables.")
+        return
+    results, _ = result_tuple
+    filtered_results = []
+    if results:
+        for r in results:
+            if r[0] not in BLOCKED_TABLES:
+                filtered_results.append(r[0])
+
+    table_info = utils.format_db_tables(filtered_results)
+    print()
+    print(table_info["table"])
+    print()
+
+    table_name = table_info.get("name")
+    if not table_name:
+        table_name = input("Type the table name to delete from: ").strip().lower()
+
+    if table_name not in filtered_results:
+        print("Table not found")
+        return
+
+    pk_column = utils.return_pk_column_name(table_name)
+    if not pk_column or not pk_column[0]:
+        print("Table not found or without a pk\n")
+        return
+    pk_column = pk_column[0]
+
+    col_check = executor.execute_sql_by_query(
+        "SELECT column_name FROM information_schema.columns WHERE table_name = %s AND column_name = 'is_deleted'",
+        params=(table_name,),
+        fetch_results=True,
+    )
+    if not col_check or not col_check[0]:
+        print("Column 'is_deleted' not found in this table.")
+        return
+
+    id_to_delete = input(f"Type the {pk_column} value to delete: ").strip()
+
+    id_check = executor.execute_sql_by_query(
+        f"SELECT * FROM {table_name} WHERE {pk_column} = %s AND is_deleted = FALSE",
+        params=(id_to_delete,),
+        fetch_results=True,
+    )
+    if not id_check or not id_check[0]:
+        print(f"Id '{id_to_delete}' not found at table {table_name}\n")
+        return
+
+    query = f"UPDATE {table_name} SET is_deleted = TRUE WHERE {pk_column} = %s"
+    executor.execute_sql_by_query(query, params=(id_to_delete,))
+    print("\nDeleted successfully (soft delete)\n")
+
+
+
+if __name__ == "__main__":
+
+    while True:
+
+        print(menu(1))
+        opt = input("Type an option: ")
+
+        if opt == "1": create()
+
+        if opt == "2": populate()
+
+        if opt == "3": show()
+
+        if opt == "4": query()
+
+        if opt == "5": update()
+
+        if opt == "6": delete()
+
+        if opt == "7": ai()
+
+        if opt == "8": clear()
+
+        if opt == "0": break
+
+    print("\nThanks to use our system ;)")
+

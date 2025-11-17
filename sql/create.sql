@@ -1,6 +1,7 @@
 CREATE TABLE delegacia (
     id_delegacia INTEGER PRIMARY KEY,
-    chefe_delagacia VARCHAR
+    chefe_delagacia VARCHAR,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE departamento (
@@ -10,7 +11,8 @@ CREATE TABLE departamento (
     telefone INTEGER,
     email VARCHAR,
     area_atuacao VARCHAR,
-    fk_delegacia_id_delegacia INTEGER
+    fk_delegacia_id_delegacia INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE veiculo (
@@ -18,41 +20,48 @@ CREATE TABLE veiculo (
     status_veiculo VARCHAR,
     modelo VARCHAR,
     uso VARCHAR,
-    fk_delegacia_id_delegacia INTEGER
+    fk_delegacia_id_delegacia INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE agente (
     id_agente INTEGER PRIMARY KEY,
     cargo_agente VARCHAR,
-    fk_delegacia_id_delegacia INTEGER
+    fk_delegacia_id_delegacia INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE envolvido (
     id_envolvido INTEGER PRIMARY KEY,
     nome VARCHAR,
-    idade INTEGER
+    idade INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE testemunha (
     relato VARCHAR,
-    fk_envolvido_id_envolvido INTEGER PRIMARY KEY
+    fk_envolvido_id_envolvido INTEGER PRIMARY KEY,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE criminoso (
     pena VARCHAR,
     data_condenacao VARCHAR,
-    fk_envolvido_id_envolvido INTEGER PRIMARY KEY
+    fk_envolvido_id_envolvido INTEGER PRIMARY KEY,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE suspeito (
     antecedentes VARCHAR,
     status_suspeito VARCHAR,
-    fk_envolvido_id_envolvido INTEGER PRIMARY KEY
+    fk_envolvido_id_envolvido INTEGER PRIMARY KEY,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE vitima (
     status_vitima VARCHAR,
-    fk_envolvido_id_envolvido INTEGER PRIMARY KEY
+    fk_envolvido_id_envolvido INTEGER PRIMARY KEY,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE prova (
@@ -60,7 +69,8 @@ CREATE TABLE prova (
     descricao_prova VARCHAR,
     tipo_prova VARCHAR,
     data_coleta VARCHAR,
-    fk__crime_id_crime INTEGER
+    fk__crime_id_crime INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE crime (
@@ -70,20 +80,23 @@ CREATE TABLE crime (
     local_crime VARCHAR,
     status_crime VARCHAR,
     fk_delegacia_id_delegacia INTEGER,
-    fk_id_tipo_crime INTEGER
+    fk_id_tipo_crime INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE Tipo_Crime (
     id_tipo_crime INTEGER PRIMARY KEY,
     categoria VARCHAR,
-    descricao VARCHAR
+    descricao VARCHAR,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE tipo_prova (
     id_tipo INTEGER PRIMARY KEY,
     nome VARCHAR,
     descricao VARCHAR,
-    fk_prova_id_prova INTEGER
+    fk_prova_id_prova INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE envolvido_crime (
