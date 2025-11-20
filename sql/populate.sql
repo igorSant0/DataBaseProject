@@ -87,7 +87,7 @@ VALUES  ('2025-11-01', 1, 'Assalto ao banco', 'Rua C, 789', 'Resolvido', 1, 2),
         ('2025-11-15', 15, 'Homicídio em bar', 'Rua R, 666', 'Em aberto', 1, 4),
         ('2025-11-16', 16, 'Tráfico de drogas', 'Rua S, 777', 'Resolvido', 2, 5);
 
-INSERT INTO prova (id_prova, descricao_prova, tipo_prova, data_coleta, fk__crime_id_crime)
+INSERT INTO prova (id_prova, descricao_prova, tipo_prova, data_coleta, fk_crime_id_crime)
 VALUES  (1, 'Impressões digitais', 'Digital', '2025-11-03', 1),
         (2, 'Câmeras de segurança', 'Visual', '2025-11-04', 2),
         (3, 'Testemunho', 'Oral', '2025-11-05', 3),
@@ -115,10 +115,10 @@ VALUES  (1, 'Digital', 'Impressões digitais coletadas', 1),
         (7, 'Oral', 'Relatos de vítimas', 7),
         (8, 'Visual', 'Fotos do local do crime', 8);
 
-INSERT INTO envolvido_crime (fk__crime_id_crime, fk_envolvido_id_envolvido)
+INSERT INTO envolvido_crime (fk_crime_id_crime, fk_envolvido_id_envolvido)
 VALUES  (1, 1),(2, 2),(3, 3),(4, 4),(5, 5),(6, 6),(7, 7),(8, 8),
         (9, 9),(10, 10),(11, 11),(12, 12),(13, 13),(14, 14),(15, 15),(16, 16);
 
-INSERT INTO agente_crime (fk_agente_id_agente, fk__crime_id_crime)
+INSERT INTO agente_crime (fk_agente_id_agente, fk_crime_id_crime)
 VALUES  (1, 1),(2, 2),(3, 3),(1, 4),(2, 5),(3, 6),(1, 7),(2, 8),
         (1, 9),(3, 10),(2, 11),(1, 12),(3, 13),(2, 14),(1, 15),(3, 16);

@@ -37,14 +37,13 @@ def execute_sql_by_file(
             return results, columns
         else:
             conn.commit()
-            print(f"Success: Commands from file '{file_name}' were executed.")
-            return None
+            return True
 
     except (Exception, psycopg2.Error) as error:
         print(f"Error executing '{file_name}': {error}")
         if conn:
             conn.rollback()
-        return None
+        return False
 
     finally:
         connector.disconnect(conn, cursor)
@@ -72,13 +71,13 @@ def execute_sql_by_query(
             return results, columns
         else:
             conn.commit()
-            return None
+            return True
 
     except (Exception, psycopg2.Error) as error:
         print(f"Error executing query: {error}")
         if conn:
             conn.rollback()
-        return None
+        return False
 
     finally:
         connector.disconnect(conn, cursor)

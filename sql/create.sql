@@ -69,7 +69,7 @@ CREATE TABLE prova (
     descricao_prova VARCHAR,
     tipo_prova VARCHAR,
     data_coleta VARCHAR,
-    fk__crime_id_crime INTEGER,
+    fk_crime_id_crime INTEGER,
     is_deleted BOOLEAN DEFAULT FALSE
 );
 
@@ -100,15 +100,17 @@ CREATE TABLE tipo_prova (
 );
 
 CREATE TABLE envolvido_crime (
-    fk__crime_id_crime INTEGER,
-    fk_envolvido_id_envolvido INTEGER
+    fk_crime_id_crime INTEGER,
+    fk_envolvido_id_envolvido INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE agente_crime (
     fk_agente_id_agente INTEGER,
-    fk__crime_id_crime INTEGER
+    fk_crime_id_crime INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
- 
+
 ALTER TABLE departamento ADD CONSTRAINT FK_departamento_2
     FOREIGN KEY (fk_delegacia_id_delegacia)
     REFERENCES delegacia (id_delegacia)
@@ -145,7 +147,7 @@ ALTER TABLE vitima ADD CONSTRAINT FK_vitima_2
     ON DELETE CASCADE;
  
 ALTER TABLE prova ADD CONSTRAINT FK_prova_2
-    FOREIGN KEY (fk__crime_id_crime)
+    FOREIGN KEY (fk_crime_id_crime)
     REFERENCES crime (id_crime)
     ON DELETE RESTRICT;
  
@@ -165,7 +167,7 @@ ALTER TABLE tipo_prova ADD CONSTRAINT FK_tipo_prova_2
     ON DELETE RESTRICT;
  
 ALTER TABLE envolvido_crime ADD CONSTRAINT FK_envolvido_crime_1
-    FOREIGN KEY (fk__crime_id_crime)
+    FOREIGN KEY (fk_crime_id_crime)
     REFERENCES crime (id_crime)
     ON DELETE RESTRICT;
  
@@ -180,6 +182,6 @@ ALTER TABLE agente_crime ADD CONSTRAINT FK_agente_crime_1
     ON DELETE RESTRICT;
  
 ALTER TABLE agente_crime ADD CONSTRAINT FK_agente_crime_2
-    FOREIGN KEY (fk__crime_id_crime)
+    FOREIGN KEY (fk_crime_id_crime)
     REFERENCES crime (id_crime)
     ON DELETE RESTRICT;

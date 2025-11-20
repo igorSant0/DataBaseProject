@@ -5,6 +5,24 @@ import matplotlib.pyplot as plt
 import json
 from tabulate import tabulate
 
+BLOCKED_TABLES = ["envolvido_crime", "agente_crime", "tipo_prova", "Tipo_Crime"]
+DEPENDENCIES = {
+    "delegacia": [("crime", "fk_delegacia_id_delegacia"), 
+                  ("departamento", "fk_delegacia_id_delegacia"), 
+                  ("agente", "fk_delegacia_id_delegacia"), 
+                  ("veiculo", "fk_delegacia_id_delegacia")],
+    "crime": [("prova", "fk_crime_id_crime"), 
+              ("agente_crime", "fk_crime_id_crime"), 
+              ("envolvido_crime", "fk_crime_id_crime")],
+    "prova": [("tipo_prova", "fk_prova_id_prova")],
+    "envolvido": [("envolvido_crime", "fk_envolvido_id_envolvido"), 
+                  ("vitima", "fk_envolvido_id_envolvido"), 
+                  ("criminoso", "fk_envolvido_id_envolvido"), 
+                  ("suspeito", "fk_envolvido_id_envolvido"), 
+                  ("testemunha", "fk_envolvido_id_envolvido")],
+
+}
+
 
 def format_db_tables(tables: Optional[List[str]] = None) -> Dict[str, str]:
     results = []
@@ -123,3 +141,39 @@ def format_query_table(data, columns):
 def tuples_to_json(results, columns):
     dict_list = [dict(zip(columns, row)) for row in results]
     return json.dumps(dict_list, ensure_ascii=False, indent=2)
+
+
+def menu(num):
+    if num == 1:
+        return """
+===========================
+          MENU
+===========================
+
+1. Init: Execute clear, create and populate at same time
+2. Create: Start all the database schema
+3. Insert: Populate the database
+4. Show: Display all tables and their data
+5. Query: Execute predefined queries
+6. Update: Update values in a table
+7. Delete: Delete specific values
+8. IA: Perform AI-related tasks
+9. Clear: Drop all database schema
+0. Disconnect: Exit the program
+===========================
+"""
+        print()
+    elif num == 2:
+        return """
+===========================
+       QUERY MENU
+===========================
+
+1. Crimes by department workload: Displays the total number of crimes associated with each department based on the delegacy they belong to, allowing analysis of operational workload distribution across departments.
+2. Crimes by type and delegacy: Displays the total number of crimes for each type, separated by delegacy.
+3. Evidences by type and crime: Presents the quantity of evidences collected, grouped by type of evidence and associated crime.
+===========================
+"""
+        print()
+    else:
+        return "Menu error"

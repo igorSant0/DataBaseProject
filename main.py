@@ -1,56 +1,20 @@
 from service import executor
 from service import utils
 from ai import ai_manager
-import json
-
-BLOCKED_TABLES = ["envolvido_crime", "agente_crime", "tipo_prova", "Tipo_Crime"]
-
-
-def menu(num):
-    if num == 1:
-        return """
-===========================
-          MENU
-===========================
-
-1. Create: Start all the database schema
-2. Insert: Populate the database
-3. Show: Display all tables and their data
-4. Query: Execute predefined queries
-5. Update: Update values in a table
-6. Delete: Delete specific values
-7. IA: Perform AI-related tasks
-8. Clear: Drop all database schema
-0. Disconnect: Exit the program
-===========================
-"""
-        print()
-    elif num == 2:
-        return """
-===========================
-       QUERY MENU
-===========================
-
-1. Crimes by department workload: Displays the total number of crimes associated with each department based on the delegacy they belong to, allowing analysis of operational workload distribution across departments.
-2. Crimes by type and delegacy: Displays the total number of crimes for each type, separated by delegacy.
-3. Evidences by type and crime: Presents the quantity of evidences collected, grouped by type of evidence and associated crime.
-===========================
-"""
-        print()
-    else:
-        return "Menu error"
-
 
 def create():
-    executor.execute_sql_by_file("create.sql")
+    if executor.execute_sql_by_file("create.sql"):
+        print("Schame created successfully")
 
 
 def populate():
-    executor.execute_sql_by_file("populate.sql")
+    if executor.execute_sql_by_file("populate.sql"):
+        print("Database populated successfully")
 
 
 def clear():
-    executor.execute_sql_by_file("drop.sql")
+    if executor.execute_sql_by_file("drop.sql"):
+        print("All data cleaned successfully")
 
 
 def show():
@@ -67,7 +31,7 @@ def update():
     filtered_results = []
     if results:
         for r in results:
-            if r[0] not in BLOCKED_TABLES:
+            if r[0] not in utils.BLOCKED_TABLES:
                 filtered_results.append(r[0])
 
     table = utils.format_db_tables(filtered_results)
@@ -127,7 +91,7 @@ def update():
 # TODO: querys ainda não implementadas
 def query():
 
-    print(menu(2))
+    print(utils.menu(2))
     opt = input("Type a query option: ")
 
     if opt == "1":
@@ -214,7 +178,7 @@ def delete():
     filtered_results = []
     if results:
         for r in results:
-            if r[0] not in BLOCKED_TABLES:
+            if r[0] not in utils.BLOCKED_TABLES:
                 filtered_results.append(r[0])
 
     table_info = utils.format_db_tables(filtered_results)
@@ -236,15 +200,6 @@ def delete():
         return
     pk_column = pk_column[0]
 
-    col_check = executor.execute_sql_by_query(
-        "SELECT column_name FROM information_schema.columns WHERE table_name = %s AND column_name = 'is_deleted'",
-        params=(table_name,),
-        fetch_results=True,
-    )
-    if not col_check or not col_check[0]:
-        print("Column 'is_deleted' not found in this table.")
-        return
-
     id_to_delete = input(f"Type the {pk_column} value to delete: ").strip()
 
     id_check = executor.execute_sql_by_query(
@@ -256,34 +211,60 @@ def delete():
         print(f"Id '{id_to_delete}' not found at table {table_name}\n")
         return
 
+    if table_name in utils.DEPENDENCIES:
+        for dep_table, fk_column in utils.DEPENDENCIES[table_name]:
+            dep_col_check = executor.execute_sql_by_query(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = %s AND column_name = 'is_deleted'",
+                params=(dep_table,),
+                fetch_results=True,
+            )
+            if dep_col_check and dep_col_check[0]:
+                executor.execute_sql_by_query(
+                    f"UPDATE {dep_table} SET is_deleted = TRUE WHERE {fk_column} = %s AND is_deleted = FALSE",
+                    params=(id_to_delete,)
+                )
+
     query = f"UPDATE {table_name} SET is_deleted = TRUE WHERE {pk_column} = %s"
     executor.execute_sql_by_query(query, params=(id_to_delete,))
-    print("\nDeleted successfully (soft delete)\n")
+    print("\nDeleted successfully (soft)")
 
-
+def init():
+    try:
+        clear()
+        create()
+        populate()
+        print("System init sucessfully")
+        print()
+        return
+    except:
+        print("Error to init system :(")
+        print()
+        return
 
 if __name__ == "__main__":
 
     while True:
 
-        print(menu(1))
-        opt = input("Type an option: ")
+        print(utils.menu(1))
+        opt = input("Type a number: ")
 
-        if opt == "1": create()
+        if opt == "1": init()
 
-        if opt == "2": populate()
+        if opt == "2": create()
 
-        if opt == "3": show()
+        if opt == "3": populate()
 
-        if opt == "4": query()
+        if opt == "4": show()
 
-        if opt == "5": update()
+        if opt == "5": query()
 
-        if opt == "6": delete()
+        if opt == "6": update()
 
-        if opt == "7": ai()
+        if opt == "7": delete()
 
-        if opt == "8": clear()
+        if opt == "8": ai()
+
+        if opt == "9": clear()
 
         if opt == "0": break
 
