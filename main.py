@@ -1,6 +1,7 @@
 from service import executor
 from service import utils
 from ai import ai_manager
+import time
 
 def create():
     if executor.execute_sql_by_file("create.sql"):
@@ -88,54 +89,60 @@ def update():
     print("\nUpdated successfully\n")
     print()
 
-# TODO: querys ainda não implementadas
 def query():
 
-    print(utils.menu(2))
-    opt = input("Type a query option: ")
+    while True: 
+        print(utils.menu(2))
+        opt = input("Type a query option: ")
 
-    if opt == "1":
-        result_tuple = executor.execute_sql_by_file(
-            "querys/crimesByDepartment.sql", fetch_results=True
-        )
-        if result_tuple:
-            results, columns = result_tuple
-            print(utils.format_query_table(results, columns))
-            utils.generate_graph(
-                results,
-                columns,
-                x_col="department",
-                y_col="total_crimes",
-                graph_type="bar",
+        if opt == "1":
+            result_tuple = executor.execute_sql_by_file(
+                "querys/crime_statistics.sql", fetch_results=True
             )
-    elif opt == "2":
-        result_tuple = executor.execute_sql_by_file(
-            "querys/crimesByTypeAndDelegacy.sql", fetch_results=True
-        )
-        if result_tuple:
-            results, columns = result_tuple
-            print(utils.format_query_table(results, columns))
-            utils.generate_graph(
-                results,
-                columns,
-                x_col="delegacia",
-                y_col="total_crimes",
-                graph_type="bar",
+            if result_tuple:
+                results, columns = result_tuple
+                print(utils.format_query_table(results, columns))
+                utils.generate_graph(
+                    results,
+                    columns,
+                    x_col="id_crime",
+                    y_col="total_agentes",
+                    graph_type="bar",
+                )
+        elif opt == "2":
+            result_tuple = executor.execute_sql_by_file(
+                "querys/agents_by_proofs.sql", fetch_results=True
             )
-    elif opt == "3":
-        result_tuple = executor.execute_sql_by_file(
-            "querys/evidenceByTypeAndCrime.sql", fetch_results=True
-        )
-        if result_tuple:
-            results, columns = result_tuple
-            print(utils.format_query_table(results, columns))
-            utils.generate_graph(
-                results,
-                columns,
-                x_col="tipo_crime",
-                y_col="total_provas",
-                graph_type="bar",
+            if result_tuple:
+                results, columns = result_tuple
+                print(utils.format_query_table(results, columns))
+                utils.generate_graph(
+                    results,
+                    columns,
+                    x_col="cargo_agente",
+                    y_col="total_provas",
+                    graph_type="bar",
+                )
+        elif opt == "3":
+            result_tuple = executor.execute_sql_by_file(
+                "querys/crime_by_avg_age.sql", fetch_results=True
             )
+            if result_tuple:
+                results, columns = result_tuple
+                print(utils.format_query_table(results, columns))
+                utils.generate_graph(
+                    results,
+                    columns,
+                    x_col="tipo_crime",
+                    y_col="media_idade_envolvidos",
+                    graph_type="bar",
+                )
+
+        elif opt == "0":
+            for i in range(3, 0, -1):
+                print(f"Retornando em {i}..")
+                time.sleep(0.5)
+            break
 
 def ai():
     with open("sql/create.sql", "r", encoding="utf-8") as file:
