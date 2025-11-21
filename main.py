@@ -108,6 +108,7 @@ def query():
                     x_col="id_crime",
                     y_col="total_agentes",
                     graph_type="bar",
+                    title="Agents by crime"
                 )
         elif opt == "2":
             result_tuple = executor.execute_sql_by_file(
@@ -122,6 +123,7 @@ def query():
                     x_col="cargo_agente",
                     y_col="total_provas",
                     graph_type="bar",
+                    title="Agents by proofs"
                 )
         elif opt == "3":
             result_tuple = executor.execute_sql_by_file(
@@ -136,6 +138,7 @@ def query():
                     x_col="tipo_crime",
                     y_col="media_idade_envolvidos",
                     graph_type="bar",
+                    title="Age average by crime"
                 )
 
         elif opt == "0":
@@ -143,6 +146,8 @@ def query():
                 print(f"Retornando em {i}..")
                 time.sleep(0.5)
             break
+
+        else: print("option not found, try again!");print()
 
 def ai():
     with open("sql/create.sql", "r", encoding="utf-8") as file:
@@ -255,25 +260,29 @@ if __name__ == "__main__":
         print(utils.menu(1))
         opt = input("Type a number: ")
 
-        if opt == "1": init()
+        if opt == "1": time.sleep(0.5) ; init()
 
-        if opt == "2": create()
+        if opt == "2": time.sleep(0.5) ; create()
 
-        if opt == "3": populate()
+        if opt == "3": time.sleep(0.5) ; populate()
 
-        if opt == "4": show()
+        if opt == "4": time.sleep(0.5) ; show()
 
-        if opt == "5": query()
+        if opt == "5": time.sleep(0.5) ; query()
 
-        if opt == "6": update()
+        if opt == "6": time.sleep(0.5) ; update()
 
-        if opt == "7": delete()
+        if opt == "7": time.sleep(0.5) ; delete()
 
-        if opt == "8": ai()
+        if opt == "8": time.sleep(0.5) ; ai()
 
-        if opt == "9": clear()
+        if opt == "9": time.sleep(0.5) ; clear()
 
-        if opt == "0": break
+        if opt == "0":
+            for i in range(3, 0, -1):
+                print(f"Encerrando em {i}..")
+                time.sleep(0.5) 
+            break
 
     print("\nThanks to use our system ;)")
 

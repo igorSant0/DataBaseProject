@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import json
 from tabulate import tabulate
+import time
 
 BLOCKED_TABLES = ["envolvido_crime", "agente_crime", "tipo_prova", "Tipo_Crime"]
 DEPENDENCIES = {
@@ -47,7 +48,7 @@ def format_db_tables(tables: Optional[List[str]] = None) -> Dict[str, str]:
             for idx, table_name in enumerate(results, start=1):
                 print(f"{idx}. {table_name}")
 
-        table_name = input("\nType the table name to see the possibilities: ").strip().lower()
+        table_name = input("\nType the table name to see the infos: ").strip().lower()
         print(f"\n--- TABLE DATA: {table_name.upper()} ---")
 
         colnames_result_tuple = executor.execute_sql_by_query(
@@ -108,12 +109,13 @@ def return_pk_column_name(table_name: Optional[str]) -> Optional[List[str]]:
         return None
 
 
-def generate_graph(data, columns, x_col, y_col, graph_type="bar"):
+def generate_graph(data, columns, x_col, y_col, graph_type="bar", title="none"):
     if not isinstance(data, pd.DataFrame):
         df = pd.DataFrame(data, columns=columns)
     else:
         df = data
 
+    df[y_col] = pd.to_numeric(df[y_col], errors="coerce")
     if graph_type == "bar":
         df.plot(x=x_col, y=y_col, kind="bar")
     elif graph_type == "pie":
@@ -124,7 +126,7 @@ def generate_graph(data, columns, x_col, y_col, graph_type="bar"):
         print("Unsupported graph type.")
         return
 
-    plt.title(f"{y_col} by {x_col}")
+    plt.title(title)
     plt.xlabel(x_col)
     plt.ylabel(y_col)
     plt.tight_layout()
@@ -144,6 +146,7 @@ def tuples_to_json(results, columns):
 
 
 def menu(num):
+    time.sleep(0.5)
     if num == 1:
         return """
 ===========================
