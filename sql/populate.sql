@@ -134,7 +134,7 @@ VALUES  ('2025-11-23', 1, 'Assalto ao banco X na madrugada do dia 23', 'Rua C, 7
         ('2025-11-21', 21, 'Tráfico de drogas em residência', 'Rua Y, 543', 'Resolvido', 3, 5),
         ('2025-11-22', 22, 'Sequestro relâmpago', 'Rua Z, 876', 'Em aberto', 2, 7),
         ('2025-11-24', 23, 'Vandalismo em veículo público', 'Rua AB, 135', 'Em aberto', 1, 8),
-        ('2025-11-25', 24, 'Roubo a mão armada', 'Rua AC, 579', 'Resolvido', 2, 2),
+        ('2025-11-25', 24, 'Roubo a mão armada', 'Rua AC, 579', 'Resolvido', 2, 1),
         ('2025-11-26', 25, 'Homicídio em via pública', 'Rua AD, 642', 'Em investigação', 3, 4);
 
 INSERT INTO prova (id_prova, descricao_prova, tipo_prova, data_coleta, fk_crime_id_crime)
