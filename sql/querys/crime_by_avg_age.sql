@@ -1,5 +1,3 @@
--- media de idade dos envolvidos em cada tipo de crime
-
 SELECT
     tc.categoria AS tipo_crime,
     ROUND(AVG(e.idade), 2) AS media_idade_envolvidos

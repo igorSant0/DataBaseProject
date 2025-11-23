@@ -1,6 +1,3 @@
--- resumo estatístico de cada crime, 
--- incluindo contagem de agentes, provas e média de provas
-
 SELECT
     c.id_crime,
     c.descricao_crime,

@@ -173,7 +173,7 @@ def menu(num):
 ===========================
 
 1. Crime statistics: Shows, for each crime, the total of agents, total of evidences and the average of evidences per agent.
-2. Agent proofs summary: Shows, for each agent role, the total number of evidences in crimes they participated.
+2. Crimes by agent role: Shows, for each agent role, the total number of crimes they investigated.
 3. Crime type average age: Shows, for each crime type, the average age of the involved people.
 0. Return to main menu
 ===========================

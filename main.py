@@ -112,7 +112,7 @@ def query():
                 )
         elif opt == "2":
             result_tuple = executor.execute_sql_by_file(
-                "querys/agents_by_proofs.sql", fetch_results=True
+                "querys/crimes_by_agent.sql", fetch_results=True
             )
             if result_tuple:
                 results, columns = result_tuple
@@ -121,9 +121,9 @@ def query():
                     results,
                     columns,
                     x_col="cargo_agente",
-                    y_col="total_provas",
+                    y_col="total_crimes",
                     graph_type="bar",
-                    title="Agents by proofs"
+                    title="Crimes by agent role"
                 )
         elif opt == "3":
             result_tuple = executor.execute_sql_by_file(
